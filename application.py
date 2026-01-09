@@ -30,12 +30,22 @@ class MyWidget(QtWidgets.QWidget):
 
         self.t1.setLayout(self.layout1)
 
-        # Update Window
+        # Search Window
         self.t2 = QtWidgets.QWidget()
 
         self.eSearch = QtWidgets.QLineEdit("Company Name Here")
-        self.retrievedEntries = QtWidgets.QLabel("None", alignment=QtCore.Qt.AlignCenter)
+        self.sb = QtWidgets.QScrollBar()
+        self.retrievedEntries = QtWidgets.QTableWidget()
+        self.retrievedEntries.setVerticalScrollBar(self.sb)
         
+        # self.arealayout = QtWidgets.QVBoxLayout()
+        # self.arealayout.setContentsMargins(0,0,0,0)
+        # self.arealayout.setSpacing(0)
+        
+        # self.area = QtWidgets.QScrollArea()
+        # self.area.setWidget(self.retrievedEntries)
+        # self.area.setLayout(self.arealayout)
+
         self.button2 = QtWidgets.QPushButton("Search")
         self.button2.clicked.connect(self.findRecord)
 
@@ -78,7 +88,32 @@ class MyWidget(QtWidgets.QWidget):
         self.res = self.cur.execute(f"""
                          Select * FROM applications WHERE company LIKE '%{self.eSearch.text()}%'
                          """)
-        self.retrievedEntries.setText(str(self.res.fetchone()))
+        
+        entries = self.res.fetchall()
+        if len(entries) == 0:
+            return
+        
+        i = 0
+        self.retrievedEntries.setRowCount(len(entries))
+        self.retrievedEntries.setColumnCount(len(entries[0]))
+        self.retrievedEntries.setHorizontalHeaderLabels(["Company", "Role", "Date", "URL", "Status"])
+
+        for entry in entries:
+            name = QtWidgets.QTableWidgetItem(entry[0])
+            title = QtWidgets.QTableWidgetItem(entry[1])
+            date = QtWidgets.QTableWidgetItem(entry[2])
+            url = QtWidgets.QTableWidgetItem(entry[3])
+            status = QtWidgets.QTableWidgetItem(entry[4])
+
+            self.retrievedEntries.setItem(i, 0, name)
+            self.retrievedEntries.setItem(i, 1, title)
+            self.retrievedEntries.setItem(i, 2, date)
+            self.retrievedEntries.setItem(i, 3, url)
+            self.retrievedEntries.setItem(i, 4, status)
+
+            i+= 1
+        
+
 
 
 if __name__ == "__main__":
