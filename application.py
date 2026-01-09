@@ -64,7 +64,7 @@ class MyWidget(QtWidgets.QWidget):
 
         self.cur.execute(f"""
                 INSERT INTO applications VALUES
-                ('{self.eName.text()}', '{self.eTitle.text()}', '{x.strftime('%Y-%m-%d')}', '{self.eURL.text()}', 'not yet')
+                ('{self.eName.text()}', '{self.eTitle.text()}', '{x.strftime('%Y-%m-%d')}', '{self.eURL.text()}', 'Not Yet')
                 """)
     
         # Clear out the boxes so you know it's gone through
