@@ -15,9 +15,13 @@ class MyWidget(QtWidgets.QWidget):
         # Add Record Window
         self.t1 = QtWidgets.QWidget() # Blank widget that siomply holds a layout
         
-        self.eName = QtWidgets.QLineEdit("Company Name")
-        self.eTitle = QtWidgets.QLineEdit("Role Title")
-        self.eURL = QtWidgets.QLineEdit("URL")
+        self.eName = QtWidgets.QLineEdit("")
+        self.eTitle = QtWidgets.QLineEdit("")
+        self.eURL = QtWidgets.QLineEdit("")
+
+        self.eName.setPlaceholderText("Company Name")
+        self.eTitle.setPlaceholderText("Role Title")
+        self.eURL.setPlaceholderText("URL")
         
         self.button1 = QtWidgets.QPushButton("Record")
         self.button1.clicked.connect(self.addRecord)
@@ -33,19 +37,12 @@ class MyWidget(QtWidgets.QWidget):
         # Search Window
         self.t2 = QtWidgets.QWidget()
 
-        self.eSearch = QtWidgets.QLineEdit("Company Name Here")
+        self.eSearch = QtWidgets.QLineEdit("")
+        self.eSearch.setPlaceholderText("Company Name to Search")
         self.sb = QtWidgets.QScrollBar()
         self.retrievedEntries = QtWidgets.QTableWidget()
         self.retrievedEntries.setVerticalScrollBar(self.sb)
         self.retrievedEntries.clicked.connect(self.selectRow)
-        
-        # self.arealayout = QtWidgets.QVBoxLayout()
-        # self.arealayout.setContentsMargins(0,0,0,0)
-        # self.arealayout.setSpacing(0)
-        
-        # self.area = QtWidgets.QScrollArea()
-        # self.area.setWidget(self.retrievedEntries)
-        # self.area.setLayout(self.arealayout)
 
         self.button2 = QtWidgets.QPushButton("Search")
         self.button2.clicked.connect(self.findRecord)
@@ -57,17 +54,39 @@ class MyWidget(QtWidgets.QWidget):
 
         self.t2.setLayout(self.layout2)
 
+        # Update Dialog
+        self.t3 = QtWidgets.QWidget()
+
+        self.rowid = QtWidgets.QLabel("67")
+        self.label = QtWidgets.QLabel("Updating Row: ")
+        self.uName = QtWidgets.QLineEdit("testname")
+        self.uTitle = QtWidgets.QLineEdit("testtitle")
+        self.uUrl = QtWidgets.QLineEdit("testurl")
+        self.uStatus = QtWidgets.QLineEdit("teststatus")
+
+        self.updateButton = QtWidgets.QPushButton("Update Entry")
+        self.updateButton.clicked.connect(self.updateRow)
+
+        self.layout3 = QtWidgets.QGridLayout(self)
+        self.layout3.addWidget(self.label, 0, 0)
+        self.layout3.addWidget(self.rowid, 0, 1)
+        self.layout3.addWidget(self.uName, 1, 0)
+        self.layout3.addWidget(self.uTitle, 2, 0)
+        self.layout3.addWidget(self.uUrl, 3, 0)
+        self.layout3.addWidget(self.uStatus, 4, 0)
+        self.layout3.addWidget(self.updateButton, 2, 1, 2, 1)
+
+        self.t3.setLayout(self.layout3)
+
         # Main Setup
         self.setWindowTitle("ApplicationHome")
         self.tabs = QtWidgets.QTabWidget()
         self.tabs.addTab(self.t1, "Add Record")
-        self.tabs.addTab(self.t2, "Update Record")
+        self.tabs.addTab(self.t2, "Search/Update Records")
      
         self.mainlayout = QtWidgets.QHBoxLayout(self)
         self.mainlayout.setContentsMargins(0,0,0,0)
         self.mainlayout.addWidget(self.tabs)
-        self.tabs.show()
-
     
     @QtCore.Slot()
     def addRecord(self):
@@ -119,8 +138,34 @@ class MyWidget(QtWidgets.QWidget):
     @QtCore.Slot()
     def selectRow(self, index: QtCore.QModelIndex):
         row = index.row()
+        
+        self.rowid.setText(self.retrievedEntries.item(row,5).text())
+        self.uName.setText(self.retrievedEntries.item(row,0).text())
+        self.uTitle.setText(self.retrievedEntries.item(row,1).text())
+        self.uUrl.setText(self.retrievedEntries.item(row,3).text())
+        self.uStatus.setText(self.retrievedEntries.item(row,4).text())
 
-        print(self.retrievedEntries.item(row,5).text())
+        self.tabs.addTab(self.t3, "Update Entry")
+        self.tabs.setCurrentIndex(2)
+    
+    @QtCore.Slot()
+    def updateRow(self):
+
+        self.cur.execute (f"""
+                            UPDATE applications 
+                            SET company = '{self.uName.text()}', title = '{self.uTitle.text()}', url = '{self.uUrl.text()}', status = '{self.uStatus.text()}' 
+                            WHERE rowid = {self.rowid.text()}
+                            """)
+        self.con.commit()
+
+        self.tabs.removeTab(2)
+
+    def closeEvent(self, event):
+        
+        self.con.close()
+        event.accept()
+
+
         
 
 
