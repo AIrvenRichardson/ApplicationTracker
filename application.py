@@ -37,6 +37,7 @@ class MyWidget(QtWidgets.QWidget):
         self.sb = QtWidgets.QScrollBar()
         self.retrievedEntries = QtWidgets.QTableWidget()
         self.retrievedEntries.setVerticalScrollBar(self.sb)
+        self.retrievedEntries.clicked.connect(self.selectRow)
         
         # self.arealayout = QtWidgets.QVBoxLayout()
         # self.arealayout.setContentsMargins(0,0,0,0)
@@ -86,7 +87,7 @@ class MyWidget(QtWidgets.QWidget):
     @QtCore.Slot()
     def findRecord(self):
         self.res = self.cur.execute(f"""
-                         Select * FROM applications WHERE company LIKE '%{self.eSearch.text()}%'
+                         Select rowid, * FROM applications WHERE company LIKE '%{self.eSearch.text()}%'
                          """)
         
         entries = self.res.fetchall()
@@ -96,22 +97,30 @@ class MyWidget(QtWidgets.QWidget):
         i = 0
         self.retrievedEntries.setRowCount(len(entries))
         self.retrievedEntries.setColumnCount(len(entries[0]))
-        self.retrievedEntries.setHorizontalHeaderLabels(["Company", "Role", "Date", "URL", "Status"])
+        self.retrievedEntries.setHorizontalHeaderLabels(["Company", "Role", "Date", "URL", "Status", "id"])
 
         for entry in entries:
-            name = QtWidgets.QTableWidgetItem(entry[0])
-            title = QtWidgets.QTableWidgetItem(entry[1])
-            date = QtWidgets.QTableWidgetItem(entry[2])
-            url = QtWidgets.QTableWidgetItem(entry[3])
-            status = QtWidgets.QTableWidgetItem(entry[4])
+            name = QtWidgets.QTableWidgetItem(entry[1])
+            title = QtWidgets.QTableWidgetItem(entry[2])
+            date = QtWidgets.QTableWidgetItem(entry[3])
+            url = QtWidgets.QTableWidgetItem(entry[4])
+            status = QtWidgets.QTableWidgetItem(entry[5])
+            rowid = QtWidgets.QTableWidgetItem(str(entry[0]))
 
             self.retrievedEntries.setItem(i, 0, name)
             self.retrievedEntries.setItem(i, 1, title)
             self.retrievedEntries.setItem(i, 2, date)
             self.retrievedEntries.setItem(i, 3, url)
             self.retrievedEntries.setItem(i, 4, status)
+            self.retrievedEntries.setItem(i, 5, rowid)
 
             i+= 1
+
+    @QtCore.Slot()
+    def selectRow(self, index: QtCore.QModelIndex):
+        row = index.row()
+
+        print(self.retrievedEntries.item(row,5).text())
         
 
 
