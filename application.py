@@ -1,5 +1,5 @@
-from PySide6 import QtWidgets, QtCore, QtGui
-from PySide6.QtGui import QPalette, QColor
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtGui import QPalette, QColor, QIcon
 import sqlite3
 import sys, datetime
 
@@ -7,9 +7,18 @@ class MyWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         # Database Connection
-        self.con = sqlite3.connect("applications.db")
-        self.cur = self.con.cursor()
-        self.cur.execute("CREATE TABLE IF NOT EXISTS applications(company text, title text, date text, url text, status text)")
+        self.dir = ""
+
+        self.t0 = QtWidgets.QWidget()
+        self.message = QtWidgets.QLabel("Please select database location, one will be made if there is not a database present in the directory.")
+        self.fileButton = QtWidgets.QPushButton("Open Directory...")
+        self.fileButton.clicked.connect(self.dirSelect)
+
+        self.layout0 = QtWidgets.QVBoxLayout(self)
+        self.layout0.addWidget(self.message)
+        self.layout0.addWidget(self.fileButton)
+
+        self.t0.setLayout(self.layout0)
 
 
         # Add Record Window
@@ -80,7 +89,9 @@ class MyWidget(QtWidgets.QWidget):
 
         # Main Setup
         self.setWindowTitle("ApplicationHome")
+        self.setWindowIcon(QIcon("icon.jpg"))
         self.tabs = QtWidgets.QTabWidget()
+        self.tabs.addTab(self.t0, "Database")
         self.tabs.addTab(self.t1, "Add Record")
         self.tabs.addTab(self.t2, "Search/Update Records")
      
@@ -146,7 +157,7 @@ class MyWidget(QtWidgets.QWidget):
         self.uStatus.setText(self.retrievedEntries.item(row,4).text())
 
         self.tabs.addTab(self.t3, "Update Entry")
-        self.tabs.setCurrentIndex(2)
+        self.tabs.setCurrentIndex(self.tabs.count()-1)
     
     @QtCore.Slot()
     def updateRow(self):
@@ -158,7 +169,15 @@ class MyWidget(QtWidgets.QWidget):
                             """)
         self.con.commit()
 
-        self.tabs.removeTab(2)
+        self.tabs.removeTab(self.tabs.count()-1)
+
+    def dirSelect(self):
+        self.dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Open Directory", "", QtWidgets.QFileDialog.Option.ShowDirsOnly)
+        print(self.dir)
+        self.con = sqlite3.connect(self.dir + "/applications.db")
+        self.cur = self.con.cursor()
+        self.cur.execute("CREATE TABLE IF NOT EXISTS applications(company text, title text, date text, url text, status text)")
+        self.tabs.setCurrentIndex(1)
 
     def closeEvent(self, event):
         
