@@ -1,13 +1,14 @@
 from PySide6 import QtWidgets, QtCore
 from PySide6.QtGui import QPalette, QColor, QIcon
-import sqlite3
-import sys, datetime
+import sqlite3, sys, datetime, configparser
 
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         # Database Connection
-        self.dir = ""
+        self.config = configparser.ConfigParser()
+        self.config.read('cfg.ini')
+        self.dir = self.config['DEFAULT']['dbdir']
 
         self.t0 = QtWidgets.QWidget()
         self.message = QtWidgets.QLabel("Please select database location, one will be made if there is not a database present in the directory.")
@@ -98,6 +99,13 @@ class MyWidget(QtWidgets.QWidget):
         self.mainlayout = QtWidgets.QHBoxLayout(self)
         self.mainlayout.setContentsMargins(0,0,0,0)
         self.mainlayout.addWidget(self.tabs)
+
+        if self.dir != '':
+            self.tabs.setCurrentIndex(1)
+            self.con = sqlite3.connect(self.dir + "/applications.db")
+            self.cur = self.con.cursor()
+            self.cur.execute("CREATE TABLE IF NOT EXISTS applications(company text, title text, date text, url text, status text)")
+            
     
     @QtCore.Slot()
     def addRecord(self):
@@ -173,11 +181,14 @@ class MyWidget(QtWidgets.QWidget):
 
     def dirSelect(self):
         self.dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Open Directory", "", QtWidgets.QFileDialog.Option.ShowDirsOnly)
-        print(self.dir)
         self.con = sqlite3.connect(self.dir + "/applications.db")
         self.cur = self.con.cursor()
         self.cur.execute("CREATE TABLE IF NOT EXISTS applications(company text, title text, date text, url text, status text)")
         self.tabs.setCurrentIndex(1)
+
+        self.config['DEFAULT']['dbdir'] = self.dir
+        with open('cfg.ini', 'w') as configfile:
+            self.config.write(configfile)
 
     def closeEvent(self, event):
         
