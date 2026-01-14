@@ -1,12 +1,19 @@
+from logging import config
 from PySide6 import QtWidgets, QtCore
 from PySide6.QtGui import QPalette, QColor, QIcon
-import sqlite3, sys, datetime, configparser
+import sqlite3, sys, datetime, configparser, os
 
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         # Database Connection
         self.config = configparser.ConfigParser()
+
+        if os.path.exists('cfg.ini') == False:
+            self.config['DEFAULT'] = {'dbdir': ''}
+            with open('cfg.ini', 'w') as configfile:
+                self.config.write(configfile)
+
         self.config.read('cfg.ini')
         self.dir = self.config['DEFAULT']['dbdir']
 

@@ -2,3 +2,5 @@
 applications.db
 jorps.csv
 cfg.ini
+build/
+dist/
