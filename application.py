@@ -3,6 +3,16 @@ from PySide6 import QtWidgets, QtCore
 from PySide6.QtGui import QPalette, QColor, QIcon
 import sqlite3, sys, datetime, configparser, os
 
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -97,7 +107,7 @@ class MyWidget(QtWidgets.QWidget):
 
         # Main Setup
         self.setWindowTitle("ApplicationHome")
-        self.setWindowIcon(QIcon("icon.jpg"))
+        self.setWindowIcon(QIcon(resource_path("icon.ico")))
         self.tabs = QtWidgets.QTabWidget()
         self.tabs.addTab(self.t0, "Database")
         self.tabs.addTab(self.t1, "Add Record")
@@ -201,10 +211,6 @@ class MyWidget(QtWidgets.QWidget):
         
         self.con.close()
         event.accept()
-
-
-        
-
 
 
 if __name__ == "__main__":
