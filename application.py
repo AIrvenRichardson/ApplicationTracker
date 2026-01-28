@@ -93,6 +93,8 @@ class MyWidget(QtWidgets.QWidget):
 
         self.updateButton = QtWidgets.QPushButton("Update Entry")
         self.updateButton.clicked.connect(self.updateRow)
+        self.deleteButton = QtWidgets.QPushButton("Delete Entry")
+        self.deleteButton.clicked.connect(self.deleteRow)
 
         self.layout3 = QtWidgets.QGridLayout(self)
         self.layout3.addWidget(self.label, 0, 0)
@@ -101,7 +103,8 @@ class MyWidget(QtWidgets.QWidget):
         self.layout3.addWidget(self.uTitle, 2, 0)
         self.layout3.addWidget(self.uUrl, 3, 0)
         self.layout3.addWidget(self.uStatus, 4, 0)
-        self.layout3.addWidget(self.updateButton, 2, 1, 2, 1)
+        self.layout3.addWidget(self.updateButton, 1, 1, 2, 1)
+        self.layout3.addWidget(self.deleteButton, 3, 1, 2, 1)
 
         self.t3.setLayout(self.layout3)
 
@@ -190,6 +193,15 @@ class MyWidget(QtWidgets.QWidget):
         self.cur.execute (f"""
                             UPDATE applications 
                             SET company = '{self.uName.text()}', title = '{self.uTitle.text()}', url = '{self.uUrl.text()}', status = '{self.uStatus.text()}' 
+                            WHERE rowid = {self.rowid.text()}
+                            """)
+        self.con.commit()
+
+        self.tabs.removeTab(self.tabs.count()-1)
+
+    def deleteRow(self):
+        self.cur.execute (f"""
+                            DELETE FROM applications 
                             WHERE rowid = {self.rowid.text()}
                             """)
         self.con.commit()
